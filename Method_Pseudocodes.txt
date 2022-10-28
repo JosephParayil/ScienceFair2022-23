@@ -1,0 +1,167 @@
+Pseudocodes for each method of the UnlayeredSpikingNN.nn class:
+
+
+//To randomly initialize network based on initial number of each type of neuron
+__init__(self, inputCount, hiddenCount, outputCount, synapseCount (default: -1)):
+	self.inputCount = inputCount
+	self.hiddenCount = hiddenCount
+	self.outputCount = outputCount
+	
+	totalCount = inputCount +hiddenCount +outputCount
+
+	self.cells = list of (totalCount) length, all values initialized to 0
+	self.synapses = empty list
+	
+	if synapseCount is -1:
+		synapseCount = total * 2 
+	
+	repeat (synapseCount) times:
+		add getRandomSynapse() to synapses list
+	
+
+
+//Applies network propagation functionality using a list of inputs
+//Will return list of boolean values representing output cell firing states
+run(self, input):
+	iterate through input list with index i:
+		cell at index i's value += input at index i
+		
+	
+	valueUpdates = list of total number of cells length, values initialized to 0
+	
+	for each synapse in synapses:
+		if synapses's presynaptic cell value >= 1:
+			valueUpdates at postsynapticID += synapses's weight
+	
+	for each input cell in cells:
+		if cell's value >= 1 or < 0:
+			cell value = 0
+
+	for each hidden and output cell in cells:
+		if cell's value >= 1 or <0:
+			cell value = 0
+		cell's value += valueUpdates at cell index
+	
+	outputs = list of outputCount length, values initialized to false
+	
+	for each output cell in cells:
+		if cell's value >=1:
+			outputs at (cell index - (inputCount + hiddenCount)) = true
+	
+	return outputs
+
+//Returns a new network object with the same member configurations
+copy(self):
+	copyNetwork = new network(inputCount, hiddenCount, outputCount, 0)
+	
+	copyNetwork.synapses = deep copy of synapses
+
+	return copyNetwork
+
+//Returns a synapse with random synaptic configurations
+getRandomSynapse(self):
+	newSynapse = {
+			presynapticID = random integer from 1 to totalCount
+			postsynapticID = random integer from (inputCount + 1) to totalCount
+			weight = randWeight()
+	}
+	return newSynapse
+
+//Adds a new hidden cell to the network
+//Adds synapses connected to the cell
+insertCell(self, synapsesPerAddedCell (default: 2) ):
+	add another 0 to self.cells
+	self.hiddenCount += 1
+	
+	repeat synapsesPerAddedCell times:
+		newSynapse = getRandomSynapse()
+
+		50% chance:
+			newSynapse.preSynapticID = inputCount + hiddenCount
+		else:
+			newSynapse.postSynapticID = inputCount + hiddenCount
+		add newSynapse to self.synapses
+
+//Removes cell at cellID from the network 
+//Removes all synapses connected to this cell
+//Adjust synaptic IDs for the deleted cell
+removeCell(self, cellID):	
+	remove the last index from self.Cells
+	
+	if cellID <=  inputCount:
+		decrement inputCount
+	else if cellID <= inputCout + hiddenCount:
+		decrement hiddenCount
+	else:
+		decrement outputCount
+	
+	iterate through self.Synapses with synapse:
+		if synapse.presynapticID is the cell we removed:
+			remove this synapse from self.Synapses
+		else if synapse.postsynapticID > the cell we removed:
+			decrement synapse.presynapticID
+		
+		if we removed the synapse skip this section:
+		if synapse.postsynapticID is the cell we removed:
+			remove this synapse from self.Synapses
+		else:
+			if postsynapticID > the cell we removed:
+				decrement postsynapticID
+			increment i by 1
+			if we have not removed a synapse, DO NOT increment by i
+		
+
+
+//Mutates synaptic configurations and number of interneurons		
+mutate(self, mutateRate, synapsesPerAddedCell (default = 2)):
+	copyNetwork = self.copy()
+	
+	repeat (floor(total cell count * rate)) times:
+		50% chance:
+			copyNetwork.insertCell(synapsesPerAddedCell)
+		else:
+			if there is at least 1 hidden cell
+				copyNetwork.removeCell(random hidden cell's ID)
+	
+	repeat (floor(total synapse count * rate)) times:
+		33% chance: 
+			50% chance:
+				add getRandomSynapse() to copyNetwork.synapses
+			else:
+				if there is at least 1 synapse
+					remove random synapse
+		else:
+			if there is at least 1 synapse
+				(from copyNetwork) random synapse's weight += AdjustWeight()
+	
+	return copyNetwork
+
+//Returns a dictionary representing the json format of the network for exporting.
+toJSON(self):
+	jsonNetwork = {}
+	jsonNetwork['Synapses'] = deep copy of self.synapses
+	jsonNetwork['InputCount'] = self.InputCount
+	jsonNetwork['HiddenCount'] = self.HiddenCount
+	jsonNetwork['OutputCount'] = self.OutputCount
+	
+	return jsonNetwork
+
+
+STATIC METHODS:
+
+//Returns network object based on the dictionary in Json format
+fromJSON(jsonNetwork):
+	newNetwork = use network constructor, with 0 synapseCount and applying cell counts from corresponding item of jsonNetwork
+	newNetwork.synapses = deep copy of jsonNetwork['Synapses']
+
+	return newNetwork	
+
+
+//Returns a random floating point number to initialize weight
+randWeight():
+	return random float from -WEIGHT_LIMIT to WEIGHT_LIMIT
+
+//Returns randomly floating point number to represent change to weight
+adjustWeight():
+	return random float from -WEIGHT_MUTATE_FACTOR to WEIGHT_MUTATE_FACTOR
+	

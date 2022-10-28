@@ -153,7 +153,7 @@ class nn:
         copyNetwork = self.copy()
 
         #Adding/removing hidden cells
-        for i in range(math.floor(len(copyNetwork.cells) * mutateRate)):
+        for i in range(math.ceil(len(copyNetwork.cells) * mutateRate)):
             if random.randint(1, 2) == 1:
                 #Add hidden cell
                 copyNetwork.insertCell(synapsesPerCell)
@@ -164,7 +164,7 @@ class nn:
                         random.randint(copyNetwork.inputCount, copyNetwork.inputCount + copyNetwork.hiddenCount - 1))
 
         #Adding, removing, and altering synapses
-        for i in range(math.floor(len(copyNetwork.synapses) * mutateRate)):
+        for i in range(math.ceil(len(copyNetwork.synapses) * mutateRate)):
             if random.randint(1, 3) == 1:
                 #Add/remove synapse
                 if random.randint(1, 2) == 1:
